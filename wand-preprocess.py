@@ -1,5 +1,6 @@
 from wand.image import Image
 import sys
+import glob 
 
 kmeans_values = [8, 16, 24, 32, 64]
 
@@ -53,10 +54,35 @@ if __name__ == "__main__":
     inPath = args[1]
     outPath = args[2]
 
-    with Image(filename=inPath) as img:
+    numInitial = 0
+    num = 0
+    if len(args) > 2:
+        numInitial = int(args[3])
 
-        print ("PROCESSING " + inPath)
+    if outPath[-1] != '/':
+        outPath = outPath + '/'
 
-        outputs = process(img)
+    length = len(glob.glob(inPath))
 
-        export(outputs, outPath)
+    for filepath in glob.iglob(inPath):
+
+        num += 1
+
+        if num < numInitial:
+            continue
+        
+        name = filepath.split('/')[-1]
+        extension = str.lower(name.split('.')[1])
+        validExtensions = ['jpg', 'png', 'jpeg']
+
+        if extension not in validExtensions:
+            print ("Skipping: " + name + "    " + str(num) + "/" + str(length))
+            continue
+
+        print ("Processing: " + name + "    " + str(num) + "/" + str(length))
+        
+        with Image(filename=filepath) as img:
+
+            outputs = process(img)
+
+            export(outputs, outPath + name)
