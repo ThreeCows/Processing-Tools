@@ -41,7 +41,7 @@ def export(outputs, outPath):
 
     for o, k in zip(outputs, kmeans_values):
 
-        o.save(filename = outPath_split[0]+'-K'+str(k)+'.'+outPath_split[1])
+        o.save(filename = outPath_split[0]+'-K'+str(k)+'.'+outPath_split[-1])
     
 
 if __name__ == "__main__":
@@ -56,13 +56,18 @@ if __name__ == "__main__":
 
     numInitial = 0
     num = 0
-    if len(args) > 2:
+    if len(args) > 3:
         numInitial = int(args[3])
 
     if outPath[-1] != '/':
         outPath = outPath + '/'
 
     length = len(glob.glob(inPath))
+    outFolder = glob.glob(outPath + '*')
+    outNames = []
+    for o in outFolder:
+        if "K8" in o:
+            outNames.append(o.split('-K8')[0].split('/')[-1])
 
     for filepath in glob.iglob(inPath):
 
@@ -72,7 +77,12 @@ if __name__ == "__main__":
             continue
         
         name = filepath.split('/')[-1]
-        extension = str.lower(name.split('.')[1])
+
+        if name.split('.')[0] in outNames:
+            print ('Already processed: ' + name + "    " + str(num) + "/" + str(length))
+            continue
+
+        extension = str.lower(name.split('.')[-1])
         validExtensions = ['jpg', 'png', 'jpeg']
 
         if extension not in validExtensions:
@@ -81,6 +91,8 @@ if __name__ == "__main__":
 
         print ("Processing: " + name + "    " + str(num) + "/" + str(length))
         
+        
+
         with Image(filename=filepath) as img:
 
             outputs = process(img)
